@@ -1,0 +1,51 @@
+{
+  "name": "soul_paint",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "hardhat compile",
+    "build": "npm run compile",
+    "deploy": "hardhat run",
+    "verify": "hardhat verify --network goerli",
+    "blocknode": "hardhat node",
+    "prettier": "prettier --write 'contracts/**/*.sol'",
+    "watch": "remixd -s . --remix-ide https://remix.ethereum.org",
+    "clean": "rm -rf .deps && rm -rf artifacts && rm -rf cache && rm -rf web3-types && rm -rf test-types"
+  },
+  "author": "BrianKuei",
+  "license": "ISC",
+  "devDependencies": {
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/providers": "^5.7.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
+    "@typechain/ethers-v5": "^10.1.0",
+    "@typechain/hardhat": "^6.1.2",
+    "@typechain/web3-v1": "^6.0.1",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^18.7.13",
+    "chai": "^4.3.6",
+    "dotenv": "^16.0.1",
+    "erc721psi": "^0.7.0",
+    "ethers": "^5.7.0",
+    "hardhat": "^2.10.2",
+    "hardhat-gas-reporter": "^1.0.8",
+    "prettier": "^2.8.0",
+    "prettier-plugin-solidity": "^1.0.0",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "^0.0.5",
+    "solidity-coverage": "^0.7.21",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.0",
+    "typescript": "^4.8.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.0"
+  }
+}
