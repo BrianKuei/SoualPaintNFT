@@ -1,4 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config";
+import "hardhat-gas-reporter";
 import "@nomicfoundation/hardhat-toolbox";
 
 const config: HardhatUserConfig = {
@@ -7,6 +8,11 @@ const config: HardhatUserConfig = {
     hardhat: {
       gas: 'auto',
     }
+  },
+  gasReporter: {
+    enabled: true,
+    outputFile: "gas-report.txt",
+    noColors: true
   }
 };
 

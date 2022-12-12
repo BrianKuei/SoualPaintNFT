@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "erc721psi/contracts/ERC721Psi.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
+contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
     using Strings for uint256;
+    using ECDSA for bytes32;
 
     bool public _isSaleActive = false;
     bool public _isWLSaleActive = false;
@@ -29,7 +32,10 @@ contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
     //funds
     address funds;
 
-    constructor(string memory initBaseURI) ERC721Psi("SoulPaint", "SP") {
+    using Counters for Counters.Counter;
+    Counters.Counter private _nextTokenId;
+
+    constructor(string memory initBaseURI) ERC721("SoulPaintErc721", "SP") {
         setBaseURI(initBaseURI);
     }
 
@@ -117,8 +123,14 @@ contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
     }
 
     function _mint(uint256 tokenQuantity) internal {
-        if (totalSupply() + tokenQuantity < MAX_SUPPLY) {
-            _safeMint(msg.sender, tokenQuantity);
+        // Check non-zero mint
+		require(tokenQuantity > 0, 'quantity must be greater 0');
+        uint256 currentTokens = totalSupply();
+        if (currentTokens + tokenQuantity < MAX_SUPPLY) {
+            for(uint i; i < tokenQuantity; ++i) {
+                _nextTokenId.increment();
+                _safeMint(msg.sender, currentTokens + i);
+            }
         }
     }
 
@@ -151,6 +163,10 @@ contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
     // internal
     function _baseURI() internal view virtual override returns (string memory) {
         return baseURI;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _nextTokenId.current();
     }
 
     //only owner
@@ -207,7 +223,7 @@ contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Psi, ERC2981)
+        override(ERC721, ERC2981)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
