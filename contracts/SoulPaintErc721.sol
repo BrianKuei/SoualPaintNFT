@@ -35,8 +35,13 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _nextTokenId;
 
-    constructor(string memory initBaseURI) ERC721("SoulPaintErc721", "SP") {
-        setBaseURI(initBaseURI);
+    constructor(
+        string memory _initBaseURI,
+        address receiver,
+        uint96 feeNumerator
+    ) ERC721("SoulPaintErc721", "SP") {
+        setBaseURI(_initBaseURI);
+        setDefaultRoyalty(receiver, feeNumerator);
     }
 
     //modifier
@@ -44,9 +49,9 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
         require(tx.origin == msg.sender, "caller is not EOA");
         _;
     }
-    modifier notExceedMax_Supply(uint256 tokenQuantity) {
+    modifier notExceedMax_Supply(uint256 _tokenQuantity) {
         require(
-            totalSupply() + tokenQuantity <= MAX_SUPPLY,
+            totalSupply() + _tokenQuantity <= MAX_SUPPLY,
             "Sale would exceed max supply"
         );
         _;
@@ -55,39 +60,39 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
         require(_isSaleActive, "Sale is not active");
         _;
     }
-    modifier balance(uint256 tokenQuantity) {
+    modifier balance(uint256 _tokenQuantity) {
         require(
-            balanceOf(msg.sender) + tokenQuantity <= maxBalance,
+            balanceOf(msg.sender) + _tokenQuantity <= maxBalance,
             "Sale would exceed max balance"
         );
         _;
     }
 
     //mintFunction
-    function mint(uint256 tokenQuantity)
+    function mint(uint256 _tokenQuantity)
         public
         payable
         nonReentrant
         onlyEOA
-        notExceedMax_Supply(tokenQuantity)
+        notExceedMax_Supply(_tokenQuantity)
         saleTime
-        balance(tokenQuantity)
+        balance(_tokenQuantity)
     {
         require(
-            tokenQuantity * mintPrice <= msg.value,
+            _tokenQuantity * mintPrice <= msg.value,
             "Not enough ether sent"
         );
-        _mint(tokenQuantity);
+        _mint(_tokenQuantity);
     }
 
-    function mint_Owner(uint256 tokenQuantity)
+    function mint_Owner(uint256 _tokenQuantity)
         public
         payable
         onlyOwner
         onlyEOA
-        notExceedMax_Supply(tokenQuantity)
+        notExceedMax_Supply(_tokenQuantity)
     {
-        _mint(tokenQuantity);
+        _mint(_tokenQuantity);
     }
 
     //WL
@@ -99,13 +104,13 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
         return MerkleProof.verifyCalldata(proof, merkleRoot, leaf);
     }
 
-    function mint_WL(uint256 tokenQuantity, bytes32[] calldata _merkleProof)
+    function mint_WL(uint256 _tokenQuantity, bytes32[] calldata _merkleProof)
         public
         payable
         nonReentrant
         onlyEOA
-        notExceedMax_Supply(tokenQuantity)
-        balance(tokenQuantity)
+        notExceedMax_Supply(_tokenQuantity)
+        balance(_tokenQuantity)
     {
         require(_isWLSaleActive, "Sale must be active to mint");
         require(
@@ -116,25 +121,25 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
             "Must be whitelisted"
         );
         require(
-            tokenQuantity * WL_mintPrice <= msg.value,
+            _tokenQuantity * WL_mintPrice <= msg.value,
             "Not enough ether sent"
         );
-        _mint(tokenQuantity);
+        _mint(_tokenQuantity);
     }
 
-    function _mint(uint256 tokenQuantity) internal {
+    function _mint(uint256 _tokenQuantity) internal {
         // Check non-zero mint
-		require(tokenQuantity > 0, 'quantity must be greater 0');
+        require(_tokenQuantity > 0, "quantity must be greater 0");
         uint256 currentTokens = totalSupply();
-        if (currentTokens + tokenQuantity < MAX_SUPPLY) {
-            for(uint i; i < tokenQuantity; ++i) {
+        if (currentTokens + _tokenQuantity < MAX_SUPPLY) {
+            for (uint256 i; i < _tokenQuantity; ++i) {
                 _nextTokenId.increment();
                 _safeMint(msg.sender, currentTokens + i);
             }
         }
     }
 
-    function tokenURI(uint256 tokenId)
+    function tokenURI(uint256 _tokenId)
         public
         view
         virtual
@@ -142,10 +147,10 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
         returns (string memory)
     {
         require(
-            _exists(tokenId),
+            _exists(_tokenId),
             "ERC721Metadata: URI query for nonexistent token"
         );
-        string memory _tokenURI = _tokenURIs[tokenId];
+        string memory _tokenURI = _tokenURIs[_tokenId];
         string memory base = _baseURI();
         // If there is no base URI, return the token URI.
         if (bytes(base).length == 0) {
@@ -155,9 +160,9 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
         if (bytes(_tokenURI).length > 0) {
             return string(abi.encodePacked(base, _tokenURI));
         }
-        // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
+        // If there is a baseURI but no tokenURI, concatenate the _tokenID to the baseURI.
         return
-            string(abi.encodePacked(base, tokenId.toString(), baseExtension));
+            string(abi.encodePacked(base, _tokenId.toString(), baseExtension));
     }
 
     // internal
@@ -214,10 +219,18 @@ contract SoulPaintErc721 is ERC721, ERC2981, Ownable, ReentrancyGuard {
     }
 
     function setDefaultRoyalty(address receiver, uint96 feeNumerator)
-        external
+        public
         onlyOwner
     {
         _setDefaultRoyalty(receiver, feeNumerator);
+    }
+
+    function setTokenRoyalty(
+        uint256 tokenId,
+        address receiver,
+        uint96 feeNumerator
+    ) external onlyOwner {
+        _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
 
     function supportsInterface(bytes4 interfaceId)

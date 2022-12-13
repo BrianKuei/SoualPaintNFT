@@ -12,12 +12,17 @@ describe("soul pain ERC721", () => {
   let whitelisted: string[];
   let root: string;
   let proof: string[];
+  let newRoyaltyReceiver: SignerWithAddress;
+  const RoyaltyPrice = 100;
+  const baseURI = "ipfs://QmPoqWXooyBgooB5koNtih3q9tf6qGA51n28vXChr2PTf4/";
+  const FeeDenominator = 10000;
+
 
 
   beforeEach(async () => {
+    [owner, user1, newRoyaltyReceiver] = await ethers.getSigners();
     const SoulPaintContractFactory = await ethers.getContractFactory('SoulPaintErc721');
-    soulPaint = await (await SoulPaintContractFactory.deploy('')).deployed();
-    [owner, user1] = await ethers.getSigners();
+    soulPaint = await (await SoulPaintContractFactory.deploy(baseURI, owner.address, RoyaltyPrice)).deployed();
     whitelisted = [
       "0x1C541e05a5A640755B3F1B2434dB4e8096b8322f",
       "0x1071258E2C706fFc9A32a5369d4094d11D4392Ec",
@@ -141,4 +146,105 @@ describe("soul pain ERC721", () => {
     });
 
   });
+  describe("royalty should fail", () => {
+    it("should not a non-owner to update royalty info", async function () {
+
+      const newRoyaltyPrice = 200;
+      await expect(soulPaint.connect(user1).setDefaultRoyalty(newRoyaltyReceiver.address, newRoyaltyPrice)).to.be.revertedWith("Ownable: caller is not the owner");
+
+    });
+
+    it("should not a non-owner to update token royalty info", async function () {
+
+      const newRoyaltyPrice = 200;
+      const tokenId = 1;
+      await expect(soulPaint.connect(user1).setTokenRoyalty(tokenId, newRoyaltyReceiver.address, newRoyaltyPrice)).to.be.revertedWith("Ownable: caller is not the owner");
+
+    });
+  })
+
+  describe("royalty should correct", () => {
+
+    it("should signal support for the ERC2981 Interface", async () => {
+
+      const result = await soulPaint.supportsInterface("0x2a55205a");
+      expect(result).to.equal(true);
+
+    });
+
+    it("should return the default royalty receiver and royalty amount for a provided price", async () => {
+
+      const salePrice = await soulPaint.mintPrice();
+      const tokenId = 1;
+      const royaltyInfo = await soulPaint.royaltyInfo(tokenId, salePrice);
+      const royaltyReceiver = royaltyInfo[0];
+      const royaltyAmount = royaltyInfo[1];
+
+      expect(royaltyReceiver).to.equal(owner.address);
+      expect(royaltyAmount).to.equal((salePrice.mul(RoyaltyPrice)).div(FeeDenominator));
+    });
+
+    it("should allow the owner of the contract to update royalty info", async function () {
+
+      const newRoyaltyPrice = 200;
+      const tokenId = 1;
+      await soulPaint.setDefaultRoyalty(user1.address, newRoyaltyPrice);
+      const salePrice = await soulPaint.mintPrice();
+      const royaltyInfo = await soulPaint.royaltyInfo(tokenId, salePrice);
+      const royaltyReceiver = royaltyInfo[0];
+      const royaltyAmount = royaltyInfo[1];
+
+      expect(royaltyReceiver).to.equal(user1.address);
+      expect(royaltyAmount).to.equal((salePrice.mul(newRoyaltyPrice)).div(FeeDenominator));
+
+    });
+
+    it("should allow the owner of the contract to update token royalty info", async function () {
+
+      const newRoyaltyPrice = 200;
+      const tokenId = 2;
+      await soulPaint.setTokenRoyalty(tokenId, newRoyaltyReceiver.address, newRoyaltyPrice);
+      const salePrice = await soulPaint.mintPrice();
+      const royaltyInfo = await soulPaint.royaltyInfo(tokenId, salePrice);
+      const royaltyReceiver = royaltyInfo[0];
+      const royaltyAmount = royaltyInfo[1];
+
+      expect(royaltyReceiver).to.equal(newRoyaltyReceiver.address);
+      expect(royaltyAmount).to.equal((salePrice.mul(newRoyaltyPrice)).div(FeeDenominator));
+
+    });
+  });
+
+
+
+  describe("token url should fail", () => {
+    it("should revert if a non-existent tokenId is provided", async function () {
+      await expect(soulPaint.tokenURI(2)).to.be.revertedWith("ERC721Metadata: URI query for nonexistent token");
+    })
+  })
+
+  describe("token url should correct", () => {
+    it("should return the tokenURI for a provided tokenId", async function () {
+
+      await soulPaint.toggleSaleActive();
+      const amount = 1;
+      const tokenId = 0;
+      const price = Number(await soulPaint.mintPrice()) * amount;
+      await soulPaint.mint(amount, { value: price.toString() });
+      const tokensUrl = await soulPaint.tokenURI(tokenId);
+      expect(tokensUrl).to.equal(`${baseURI}${tokenId}.json`);
+
+    })
+
+    it("token url should be 99", async () => {
+      await soulPaint.toggleSaleActive();
+      const amount = 100;
+      const tokenId = 99;
+      const price = Number(await soulPaint.mintPrice()) * amount;
+      await soulPaint.connect(user1).mint(amount, { value: price.toString() });
+      const tokensUrl = await soulPaint.tokenURI(tokenId);
+      expect(tokensUrl).to.equal(`${baseURI}${tokenId}.json`);
+    })
+
+  })
 });

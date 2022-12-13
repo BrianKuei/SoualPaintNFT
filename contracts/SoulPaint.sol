@@ -29,8 +29,13 @@ contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
     //funds
     address funds;
 
-    constructor(string memory initBaseURI) ERC721Psi("SoulPaint", "SP") {
-        setBaseURI(initBaseURI);
+    constructor(
+        string memory _initBaseURI,
+        address _receiver,
+        uint96 feeNumerator
+    ) ERC721Psi("SoulPaint", "SP") {
+        setBaseURI(_initBaseURI);
+        setDefaultRoyalty(_receiver, feeNumerator);
     }
 
     //modifier
@@ -198,10 +203,18 @@ contract SoulPaint is ERC721Psi, ERC2981, Ownable, ReentrancyGuard {
     }
 
     function setDefaultRoyalty(address receiver, uint96 feeNumerator)
-        external
+        public
         onlyOwner
     {
         _setDefaultRoyalty(receiver, feeNumerator);
+    }
+
+    function setTokenRoyalty(
+        uint256 tokenId,
+        address receiver,
+        uint96 feeNumerator
+    ) external onlyOwner {
+        _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
 
     function supportsInterface(bytes4 interfaceId)
