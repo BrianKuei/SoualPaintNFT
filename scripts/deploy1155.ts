@@ -7,11 +7,9 @@
 const { ethers, upgrades } = require("hardhat");
 
 async function main() {
-  const owner = "0xFF613131cD48c30C8759F8bf0fB1547B5D8513E3";
   const baseURI = "ipfs://QmSHk9VxVrRb9d5gQtnvpWHL88cTHJEntaHUdqxczPa93a/";
-  const RoyaltyPrice = 100;
-  const SoulPaintContractFactory = await ethers.getContractFactory('SoulPaint');
-  const token = await SoulPaintContractFactory.deploy(baseURI, owner, RoyaltyPrice);
+  const SoulPaintContractFactory = await ethers.getContractFactory('SoulPaintAP');
+  const token = await SoulPaintContractFactory.deploy(baseURI);
 
   console.log("Token address:", token.address);
 }

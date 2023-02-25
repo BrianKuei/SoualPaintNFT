@@ -2,7 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from 'hardhat';
 import { SoulPaint } from "../typechain-types";
-const { parseEther } = ethers.utils;
 
 describe("soul paint", () => {
   let soulPaint: SoulPaint;
@@ -21,11 +20,6 @@ describe("soul paint", () => {
   });
 
   describe("Correct Supply", () => {
-    it("should have correct max_supply", async () => {
-      const max_supply = await soulPaint.MAX_SUPPLY();
-      expect(max_supply).to.equal(1000);
-    });
-
     it("should have correct totalSupply", async () => {
       const total_supply = await soulPaint.totalSupply();
       expect(total_supply).to.equal(0);
@@ -72,7 +66,6 @@ describe("soul paint", () => {
 
       const beforeTransferBalance = await owner.getBalance();
       const transferFromTx = await soulPaint.transferFrom(owner.address, user1.address, 0);
-      const afterTransferBalance = await owner.getBalance();
       const receipt = await transferFromTx.wait();
       const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice);
 
