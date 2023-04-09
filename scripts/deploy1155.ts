@@ -7,7 +7,7 @@
 const { ethers, upgrades } = require("hardhat");
 
 async function main() {
-  const baseURI = "ipfs://QmSHk9VxVrRb9d5gQtnvpWHL88cTHJEntaHUdqxczPa93a/";
+  const baseURI = "https://raw.githubusercontent.com/soul-note/soulpaint-metadata/master/AP/metadata/{id}.json";
   const SoulPaintContractFactory = await ethers.getContractFactory('SoulPaintAP');
   const token = await SoulPaintContractFactory.deploy(baseURI);
 

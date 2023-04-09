@@ -11,14 +11,18 @@ const config: HardhatUserConfig = {
     hardhat: {
       gas: 'auto',
     },
+    mainnet:{
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_API_KEY as string}`,
+      accounts: [process.env.MAINNET_PRIVATE_KEY as string]
+    },
     goerli: {
-      url: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      url: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_GOERLI_API_KEY}`,
       accounts: [process.env.GOERLI_PRIVATE_KEY as string]
     },
   },
   etherscan: {
     apiKey: {
-      goerli: process.env.ETHER_SCAN_KEY as string
+      mainnet: process.env.ETHER_SCAN_KEY as string
     }
   },
   gasReporter: {

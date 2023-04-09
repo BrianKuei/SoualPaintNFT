@@ -7,9 +7,9 @@
 const { ethers, upgrades } = require("hardhat");
 
 async function main() {
-  const owner = "0xFF613131cD48c30C8759F8bf0fB1547B5D8513E3";
-  const baseURI = "ipfs://QmSHk9VxVrRb9d5gQtnvpWHL88cTHJEntaHUdqxczPa93a/";
-  const RoyaltyPrice = 100;
+  const owner = "0x39B5c5F3ac6e1328Aa81849dea3e64dbEfa28683";
+  const baseURI = "https://raw.githubusercontent.com/soul-note/soulpaint-metadata/master/ED/metadata/";
+  const RoyaltyPrice = 50;
   const SoulPaintContractFactory = await ethers.getContractFactory('SoulPaint');
   const token = await SoulPaintContractFactory.deploy(baseURI, owner, RoyaltyPrice);
 

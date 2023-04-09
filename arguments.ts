@@ -1,5 +1,5 @@
 module.exports = [
-  "ipfs://QmSHk9VxVrRb9d5gQtnvpWHL88cTHJEntaHUdqxczPa93a/",
-  "0xFF613131cD48c30C8759F8bf0fB1547B5D8513E3",
-  100
+  "ipfs://bafybeiarhf3m4jaa6j2mazavaewabdj4xdwxnjngwprvzkzk7ckpvfv4hq/",
+  "0x39B5c5F3ac6e1328Aa81849dea3e64dbEfa28683",
+  50
 ];

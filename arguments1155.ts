@@ -1,3 +1,3 @@
 module.exports = [
-  "ipfs://QmSHk9VxVrRb9d5gQtnvpWHL88cTHJEntaHUdqxczPa93a/",
+  "https://raw.githubusercontent.com/soul-note/soulpaint-metadata/master/AP/metadata/{id}.json",
 ];
